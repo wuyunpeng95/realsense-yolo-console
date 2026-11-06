@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12231f">
+  <title>DepthSight · 深度视觉控制台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23168167'/%3E%3Ccircle cx='20' cy='20' r='10' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='3' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+<svg class="svg-library" aria-hidden="true"><defs>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M8 5l2-2h4l2 2h4a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><circle cx="12" cy="12" r="4"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M6 14l4-5 4 3 6-8"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5l5 5 5-5M4 15v5h16v-5"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1.5 1-1.5 1.5-1.5 3m0 2v1"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l10 5-10 5L2 8zM2 12l10 5 10-5M2 16l10 5 10-5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 1v5m6-5v5M9 18v5m6-5v5M1 9h5m-5 6h5m12-6h5m-5 6h5"/><rect x="9" y="9" width="6" height="6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5l5 5-5 5"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l14 8-14 8z"/></symbol>
+</defs></svg>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="DepthSight 首页"><span class="brand-mark"><span></span></span><span>DepthSight<small>深度视觉工作空间</small></span></a>
+  <div class="nav-caption">工作空间</div>
+  <nav aria-label="主导航">
+    <button class="nav-item active" data-view="console"><svg><use href="#i-grid"/></svg>实时控制台<span class="nav-dot"></span></button>
+    <button class="nav-item" data-view="events"><svg><use href="#i-chart"/></svg>运行记录</button>
+    <button class="nav-item" data-view="device"><svg><use href="#i-camera"/></svg>设备信息</button>
+  </nav>
+  <div class="sidebar-camera"><div class="device-drawing"><span></span><span></span><span></span></div><strong>Intel RealSense</strong><span>D435i · RGB-D Camera</span><div class="side-device-state"><i class="dot" id="side-dot"></i><span id="side-state">正在连接设备</span></div></div>
+  <div class="sidebar-bottom"><button class="nav-item" data-view="guide"><svg><use href="#i-help"/></svg>使用说明</button><div class="local-label"><span class="local-square"></span>本机运行 · 画面留在本地<small>DEPTHSIGHT CONSOLE / 1.0</small></div></div>
+</aside>
+<div class="app-shell">
+  <header class="topbar"><div class="breadcrumb">工作空间<span>/</span><strong id="breadcrumb-name">实时控制台</strong></div><div class="topbar-right"><span class="connection" id="connection"><i class="dot"></i>连接中</span><span class="topbar-divider"></span><span class="node-label">LOCAL NODE</span><span class="avatar">DS</span></div></header>
+  <main>
+    <div class="page-heading"><div><div class="eyebrow">VISION WORKSPACE</div><h1 id="page-title">实时视觉控制台</h1><p id="page-description">同步观察真实世界的色彩、深度与人员信息。</p></div><div class="heading-actions"><span class="date-label" id="date-label"></span><button class="button" id="snapshot-button" disabled><svg><use href="#i-download"/></svg>导出同步快照</button><button class="button primary" id="camera-button" disabled><svg><use href="#i-pause"/></svg><span>停止采集</span></button></div></div>
+    <div class="alert" id="alert" role="status" hidden></div>
+    <section id="view-console" class="view">
+      <div class="metrics">
+        <article class="metric"><div class="metric-label">设备状态<svg><use href="#i-camera"/></svg></div><div class="metric-main status-value" id="metric-camera">连接中<span class="status-pulse"></span></div><div class="metric-foot" id="metric-device">等待 RealSense D435i</div></article>
+        <article class="metric"><div class="metric-label">当前检测人数<svg><use href="#i-person"/></svg></div><div class="metric-main"><span id="metric-people">—</span><span class="metric-unit">人</span><span class="small-tag">PERSON</span></div><div class="metric-foot" id="people-foot">等待人员检测结果</div></article>
+        <article class="metric"><div class="metric-label">处理帧率<svg><use href="#i-chart"/></svg></div><div class="metric-main"><span id="metric-fps">—</span><span class="metric-unit">FPS</span><svg class="sparkline" id="fps-spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points=""/></svg></div><div class="metric-foot">相机采集 <span id="capture-fps">—</span> FPS <span class="foot-divider">|</span> 实时处理</div></article>
+        <article class="metric"><div class="metric-label">推理耗时<svg><use href="#i-clock"/></svg></div><div class="metric-main"><span id="metric-latency">—</span><span class="metric-unit">ms</span></div><div class="metric-foot"><span class="tiny-dot"></span><span id="metric-model">YOLO11n · 初始化中</span></div></article>
+      </div>
+      <div class="workspace-grid">
+        <div class="visual-area">
+          <div class="section-heading"><h2><span class="section-indicator"></span>实时画面</h2><span class="subtle"><span class="sync-icon">⇄</span> RGB / Depth 对齐输出</span></div>
+          <div class="feed-grid">
+            <article class="feed-card"><div class="feed-heading"><div><span class="feed-type rgb-type">RGB</span><h3>彩色画面</h3></div><button class="icon-button" data-fullscreen="rgb-panel" title="全屏彩色画面" aria-label="全屏彩色画面"><svg><use href="#i-expand"/></svg></button></div><div class="canvas-wrap" id="rgb-panel"><canvas id="rgb-canvas" width="640" height="480" aria-label="RGB 彩色画面与人员检测框"></canvas><div class="feed-empty" id="rgb-empty"><svg><use href="#i-camera"/></svg><strong>正在连接相机</strong><span>等待 RGB 数据流</span></div><div class="live-badge" hidden><i></i>LIVE</div><div class="frame-caption" id="rgb-caption">RGB · 640 × 480</div></div><div class="feed-footer"><span><i class="legend-box"></i>人员检测框</span><label class="inline-switch"><input type="checkbox" id="show-boxes" checked><span>显示标注</span></label></div></article>
+            <article class="feed-card"><div class="feed-heading"><div><span class="feed-type depth-type">DEPTH</span><h3>深度画面</h3></div><button class="icon-button" data-fullscreen="depth-panel" title="全屏深度画面" aria-label="全屏深度画面"><svg><use href="#i-expand"/></svg></button></div><div class="canvas-wrap depth-wrap" id="depth-panel"><canvas id="depth-canvas" width="640" height="480" aria-label="近黑远白的深度画面，点击测距"></canvas><div class="feed-empty" id="depth-empty"><svg><use href="#i-layers"/></svg><strong>正在等待深度帧</strong><span>深度将对齐到彩色画面</span></div><div class="live-badge" hidden><i></i>LIVE</div><div class="frame-caption" id="depth-caption">Z16 → 灰度 · 点击像素测距</div><div class="depth-probe" id="depth-probe" hidden></div></div><div class="feed-footer depth-scale"><span id="legend-near">0.3 m 近</span><div class="gradient-scale"></div><span id="legend-far">远 6.0 m</span></div></article>
+          </div>
+          <div class="stream-status"><div><i class="dot" id="stream-dot"></i><span id="stream-text">等待数据流</span><span class="stream-seq" id="stream-seq"></span></div><span id="depth-valid">有效深度 —</span></div>
+          <article class="panel detections-panel"><div class="panel-heading"><h2>人员检测结果 <span class="count-badge" id="result-count">0</span></h2><span class="subtle">当前帧 · 距离单位 m</span></div><div class="table-scroll"><table><thead><tr><th>目标编号</th><th>检测类别</th><th>置信度</th><th>轴向距离</th><th>深度支持</th></tr></thead><tbody id="detections-body"><tr><td colspan="5" class="empty-cell">等待实时检测结果</td></tr></tbody></table></div><div class="table-note"><span class="tiny-info">i</span>距离取人员框内躯干区域有效深度的稳健中位数；编号仅用于短时目标跟随。</div></article>
+        </div>
+        <aside class="controls-area">
+          <div class="section-heading"><h2>检测配置</h2><span class="subtle">实时生效</span></div>
+          <article class="panel control-panel"><div class="control-title"><div><svg><use href="#i-person"/></svg><strong>人员检测</strong></div><label class="switch" title="启用人员检测"><input type="checkbox" id="detection-enabled" checked aria-label="启用人员检测"><span></span></label></div><p class="control-description">仅检测 person 类别，结合深度估算目标距离。</p><div class="model-box"><div class="model-icon"><svg><use href="#i-chip"/></svg></div><div><strong>YOLO11n</strong><span id="model-backend">轻量人员检测 · CPU</span></div><span class="model-dot" id="model-dot"></span></div><div class="control-field"><label for="confidence">置信度阈值<output id="confidence-value">45%</output></label><input type="range" id="confidence" min="10" max="95" value="45"><div class="range-labels"><span>更高召回</span><span>更高精度</span></div></div><div class="control-field"><label for="inference-size">推理尺寸</label><select id="inference-size"><option value="320">320 px · 速度优先</option><option value="480">480 px · 均衡</option><option value="640" selected>640 px · 精度优先</option></select></div><button class="text-button" id="reload-model" hidden>重新加载检测模型 ↻</button></article>
+          <article class="panel control-panel"><div class="control-title"><div><svg><use href="#i-layers"/></svg><strong>深度显示</strong></div><span class="mono muted">GRAYSCALE</span></div><p class="control-description">固定距离范围映射：近处为黑，远处为白。</p><form id="depth-form"><div class="depth-inputs"><label>最近距离<div><input id="near-distance" type="number" min="0.1" max="10" step="0.1" value="0.3" required><span>m</span></div></label><span class="input-arrow">→</span><label>最远距离<div><input id="far-distance" type="number" min="0.3" max="20" step="0.1" value="6" required><span>m</span></div></label></div><button class="button apply-button" type="submit">应用显示范围</button></form><div class="depth-explainer"><span class="invalid-swatch"></span>无效深度也显示为纯黑（数值 0）</div></article>
+          <article class="panel control-panel notifications-panel">
+            <div class="control-title"><div><span class="feishu-mark">↗</span><strong>飞书人员告警</strong></div><label class="switch" title="启用飞书推送"><input type="checkbox" id="notifications-enabled" aria-label="启用飞书推送"><span></span></label></div>
+            <p class="control-description" id="notification-rule">同一人员连续出现 &gt; 5 秒，且当前置信度 &gt; 85% 时推送。</p>
+            <div class="notification-status"><i class="dot" id="notification-dot"></i><span id="notification-status">等待服务状态</span><span id="notification-count">0 条</span></div>
+            <form id="notification-webhook-form">
+              <label class="notification-label" for="notification-webhook">飞书 Webhook 完整地址</label>
+              <div class="notification-controls"><input id="notification-webhook" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴完整 https://open.feishu.cn/… 地址" maxlength="2048" required aria-describedby="notification-webhook-help"></div>
+              <p class="notification-detail" id="notification-webhook-help">请输入完整机器人地址并保存，仅存储在本机。</p>
+              <button class="button apply-button" type="submit">保存推送地址</button>
+            </form>
+            <form id="notification-form">
+              <label class="notification-label" for="notification-threshold">推送置信度阈值<span>%</span></label><div class="notification-controls"><input id="notification-threshold" type="number" min="10" max="99" step="0.1" value="85" required></div>
+              <label class="notification-label spaced-label" for="notification-duration">连续出现时长<span>秒</span></label><div class="notification-controls"><input id="notification-duration" type="number" min="0.1" max="3600" step="0.1" value="5" required></div>
+              <label class="notification-label spaced-label" for="notification-cooldown">推送冷却间隔<span>秒</span></label><div class="notification-controls"><input id="notification-cooldown" type="number" min="15" max="3600" step="1" value="60" required></div>
+              <button class="button apply-button" type="submit">应用推送规则</button>
+            </form>
+            <p class="notification-detail" id="notification-presence">等待人员连续出现计时</p>
+            <p class="notification-detail" id="notification-detail">Webhook 仅保存在本机后端，不向浏览器返回。</p><p class="notification-error" id="notification-error" hidden></p><button class="button apply-button" id="notification-test" type="button" disabled>发送连接测试</button>
+            <p class="control-description">同一采集会话中，同一编号成功推送后不再重复。新编号满足时长和置信度后可告警；冷却限制不同告警的发送间隔。漏检或修改规则只重置计时，不清除已通知记录。</p>
+          </article>
+          <article class="insight-card"><div class="insight-icon">✦</div><h3>看见人员，也看见距离</h3><p>RGB 负责识别人，深度负责提供空间信息。深度有效性是测距质量提示，并不代表已通过活体认证。</p><button class="text-button" data-view="guide">了解检测原理 <svg><use href="#i-arrow"/></svg></button></article>
+        </aside>
+      </div>
+      <footer class="page-footer"><span><span class="tiny-dot"></span> 本地采集 · 本地推理 · 不上传画面</span><span id="footer-node">D435i / YOLO11n</span></footer>
+    </section>
+    <section id="view-events" class="view" hidden><article class="panel"><div class="panel-heading"><h2>本次会话运行记录</h2><button class="button compact" id="clear-events">清空记录</button></div><p class="panel-description">记录连接、参数变更和人数变化，最多保留 100 条；刷新网页后清空，不持续录制视频。</p><div class="table-scroll"><table><thead><tr><th>时间</th><th>类型</th><th>事件</th></tr></thead><tbody id="events-body"></tbody></table></div></article></section>
+    <section id="view-device" class="view" hidden><article class="panel device-panel"><div class="panel-heading"><h2>已连接的深度相机</h2><span class="small-tag">REAL DEVICE</span></div><dl id="device-details" class="device-details"><dt>设备</dt><dd>等待设备信息</dd></dl></article><article class="panel architecture-panel"><h2>本机处理架构</h2><div class="pipeline"><span>RealSense SDK<small>RGB + Z16</small></span><b>→</b><span>对齐与采集<small>单个最新帧槽</small></span><b>→</b><span>YOLO11n<small>person + 深度测距</small></span><b>→</b><span>WebSocket<small>同步双图与元数据</small></span></div><p>采集与推理使用独立线程，慢推理自动跳过旧帧。浏览器收到的 RGB、深度和检测框属于同一处理帧。</p></article></section>
+    <section id="view-guide" class="view" hidden><article class="panel guide-panel"><div class="eyebrow">QUICK START</div><h2>开始使用 DepthSight</h2><div class="guide-grid"><div><span class="step-number">01</span><h3>连接与采集</h3><p>使用 USB 3 接口连接 D435i，并关闭 RealSense Viewer 等占用相机的软件。服务启动后自动采集；使用右上角按钮停止或重新开始。</p></div><div><span class="step-number">02</span><h3>人员识别与测距</h3><p>绿色框表示检测到 person，标签包含置信度和轴向距离。短时编号不用于身份识别。躯干深度不足或波动较大时，结果表会标记测距质量。</p></div><div><span class="step-number">03</span><h3>深度与同步快照</h3><p>深度固定按最近到最远距离映射为近黑远白。点击深度图查看最新帧对应像素的距离。快照 ZIP 包含 RGB、标注图、灰度深度、原始 16 位深度和元数据。</p></div><div><span class="step-number">04</span><h3>调节性能与效果</h3><p>降低推理尺寸可减少 CPU 耗时，较大尺寸有利于识别较小目标。降低置信度可增加召回，也可能增加误检。关闭人员检测仍可查看双画面。</p></div></div><div class="guide-callout"><strong>关于“真人检测”</strong><p>当前实现是人员目标检测与深度辅助测距，不具备严格的防照片、防屏幕翻拍或活体认证能力。照片、屏幕、假人仍可能被识别为 person；有效深度不能证明真人。</p></div><h3>遇到问题</h3><p>相机断开后每约 2 秒重试连接。模型异常时仍保留画面采集，可在检测配置中重新加载模型。若 RGB 无法显示，请检查 USB 接口、相机是否被占用及服务日志。首次模型加载需要数秒。</p><p class="source-links">技术参考：<a href="https://github.com/realsenseai/librealsense/blob/master/wrappers/python/examples/align-depth2color.py" target="_blank" rel="noreferrer">RealSense 深度对齐</a> · <a href="https://docs.ultralytics.com/models/yolo11/" target="_blank" rel="noreferrer">Ultralytics YOLO11</a></p></article></section>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

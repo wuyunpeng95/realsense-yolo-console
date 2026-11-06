@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+runtime/
+models/*.pt
+models/*.download
+*.log
+config.local.json
+config.local.tmp

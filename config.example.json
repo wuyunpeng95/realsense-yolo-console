@@ -1,0 +1,9 @@
+{
+  "feishu": {
+    "enabled": true,
+    "webhook": "",
+    "cooldown_seconds": 60,
+    "threshold": 0.85,
+    "min_visible_seconds": 5
+  }
+}
